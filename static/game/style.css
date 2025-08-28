@@ -1,0 +1,221 @@
+/* 使用 CSS 变量定义颜色主题 */
+:root {
+  --bg-color: #f0f2f5;
+  --container-bg-color: #ffffff;
+  --text-color: #333;
+  --text-color-light: #555;
+  --canvas-bg-color: #e8f5e9;
+  --canvas-border-color: #ddd;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --switch-bg-color: #2c2c2c;
+  --switch-slider-color: #ffffff;
+}
+
+body[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --container-bg-color: #2c2c2c;
+  --text-color: #e0e0e0;
+  --text-color-light: #bbbbbb;
+  --canvas-bg-color: #3a4a3b;
+  --canvas-border-color: #555;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --switch-bg-color: #f0f2f5;
+  --switch-slider-color: #2c2c2c;
+}
+
+/* 全局样式 */
+body {
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  font-family: "Noto Sans SC", sans-serif;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+}
+
+/* --- 新增：iOS 风格主题切换开关 --- */
+.theme-switch-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--switch-bg-color);
+  transition: 0.4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--switch-slider-color);
+  transition: 0.4s;
+  border-radius: 50%;
+  /* 使用 content 和 background-image 添加图标 */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%232c2c2c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+input:checked + .slider {
+  background-color: var(--switch-bg-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>');
+}
+/* --- 开关样式结束 --- */
+
+/* 游戏容器 */
+.game-container {
+  text-align: center;
+  background-color: var(--container-bg-color);
+  color: var(--text-color);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px var(--shadow-color);
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+h1 {
+  margin: 0;
+  font-weight: 700;
+}
+.score-board {
+  font-size: 1.2em;
+  color: var(--text-color-light);
+}
+
+/* 游戏画布 */
+#gameCanvas {
+  background-color: var(--canvas-bg-color);
+  border: 1px solid var(--canvas-border-color);
+  border-radius: 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 控制面板 */
+.controls-panel {
+  display: flex;
+  justify-content: center; /* 居中，因为只有一个元素了 */
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.control-group label {
+  font-weight: 700;
+  color: var(--text-color-light);
+}
+
+/* 下拉选择 */
+select {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  font-family: "Noto Sans SC", sans-serif;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--canvas-border-color);
+  background-color: var(--container-bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+select:hover {
+  transform: scale(1.05);
+}
+
+/* 操作说明 */
+#instructions {
+  margin-top: 15px;
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* 游戏结束提示 */
+#gameOver {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+}
+body[data-theme="dark"] #gameOver {
+  background-color: rgba(44, 44, 44, 0.85);
+}
+#gameOver h2 {
+  font-size: 2.5em;
+  color: #d32f2f;
+  margin-bottom: 20px;
+}
+
+/* 重新开始按钮 */
+#restartButton {
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: 700;
+  color: #fff;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#restartButton:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+/* 隐藏元素 */
+.hidden {
+  display: none !important;
+}
