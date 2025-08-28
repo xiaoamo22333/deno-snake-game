@@ -121,4 +121,4 @@ async function mainHandler(req: Request): Promise<Response> {
 const PORT = 8000;
 // deno-lint-ignore no-console
 console.log(`服务器正在运行... http://localhost:${PORT}`);
-serve(mainHandler, { port: PORT });
+serve(mainHandler);
