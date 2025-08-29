@@ -10,10 +10,33 @@ type UserData = {
 // 创建一个获取 KV 实例的函数
 async function getKv(): Promise<Deno.Kv> {
   try {
-    return await Deno.openKv();
+    console.log("诊断信息:", {
+      openKvType: typeof Deno.openKv,
+      denoVersion: Deno.version,
+      environment: Deno.env.get("DENO_DEPLOYMENT_ID") ? "Deno Deploy" : "本地",
+      deployId: Deno.env.get("DENO_DEPLOYMENT_ID"),
+      permissions: {
+        net: await Deno.permissions.query({ name: "net" }),
+        env: await Deno.permissions.query({ name: "env" })
+      }
+    });
+    
+    if (typeof Deno.openKv !== "function") {
+      throw new Error(`Deno.openKv 不可用 (类型: ${typeof Deno.openKv})`);
+    }
+    
+    const kv = await Deno.openKv();
+    console.log("KV 存储连接成功");
+    return kv;
   } catch (error) {
-    console.error("KV 存储初始化失败:", error);
-    throw new Error("无法访问 KV 存储");
+    const errorObj = error as Error;
+    console.error("KV 存储错误:", {
+      name: errorObj.name,
+      message: errorObj.message,
+      stack: errorObj.stack,
+      denoVersion: Deno.version
+    });
+    throw new Error(`KV 存储错误: ${errorObj.message}`);
   }
 }
 
