@@ -89,7 +89,17 @@ async function mainHandler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   if (url.pathname.startsWith("/api/")) return apiHandler(req);
   if (url.pathname === "/") return Response.redirect(new URL("/auth/login.html", req.url).toString(), 302);
-  return serveDir(req, { fsRoot: "static" });
+  
+  try {
+    // 尝试使用 serveDir
+    return await serveDir(req, { fsRoot: "static" });
+  } catch (error) {
+    // 如果在 Deno Deploy 环境中失败，返回 404
+    if (error instanceof Error && error.message.includes("not supported")) {
+      return new Response("Not Found", { status: 404 });
+    }
+    throw error;
+  }
 }
 
 // ✅ 本地 + Deploy 通用
