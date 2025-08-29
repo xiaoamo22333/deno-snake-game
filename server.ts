@@ -28,10 +28,7 @@ async function apiHandler(req: Request): Promise<Response> {
   }
 
   try {
-    const { username, password } = await req.json() as {
-      username?: string;
-      password?: string;
-    };
+    const { username, password } = await req.json() as { username?: string; password?: string };
 
     if (!username || !password) {
       return new Response(
@@ -98,5 +95,8 @@ async function mainHandler(req: Request): Promise<Response> {
 // ✅ 本地 + Deploy 通用
 if (import.meta.main) {
   console.log("服务器启动中...");
-  serve(mainHandler); // 不指定 port
+  await serve(mainHandler, { port: 8000 }); // 为本地开发指定端口
 }
+
+// 导出 handler 函数供 Deno Deploy 使用
+export default mainHandler;
