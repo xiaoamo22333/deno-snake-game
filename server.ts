@@ -93,9 +93,22 @@ async function mainHandler(req: Request): Promise<Response> {
 }
 
 // ✅ 本地 + Deploy 通用
+async function startServer(port = 3000) {
+  try {
+    console.log(`尝试在端口 ${port} 启动服务器...`);
+    await serve(mainHandler, { port });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === "AddrInUse") {
+      console.log(`端口 ${port} 已被占用，尝试使用端口 ${port + 1}...`);
+      await startServer(port + 1);
+    } else {
+      throw error;
+    }
+  }
+}
+
 if (import.meta.main) {
-  console.log("服务器启动中...");
-  await serve(mainHandler, { port: 8000 }); // 为本地开发指定端口
+  await startServer(3000);
 }
 
 // 导出 handler 函数供 Deno Deploy 使用
