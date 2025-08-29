@@ -7,18 +7,14 @@ type UserData = {
   hashedPassword: string;
 };
 
-let kv: Deno.Kv;
-try {
-  console.log("正在初始化 KV 存储...");
-  if (!Deno.openKv) {
-    console.error("Deno.openKv 不可用");
-    throw new Error("Deno.openKv is not available");
+// 创建一个获取 KV 实例的函数
+async function getKv(): Promise<Deno.Kv> {
+  try {
+    return await Deno.openKv();
+  } catch (error) {
+    console.error("KV 存储初始化失败:", error);
+    throw new Error("无法访问 KV 存储");
   }
-  kv = await Deno.openKv();
-  console.log("KV 存储初始化成功");
-} catch (error) {
-  console.error("KV 存储初始化失败:", error);
-  throw error;
 }
 
 function str2ab(str: string): Uint8Array {
@@ -55,9 +51,10 @@ async function apiHandler(req: Request): Promise<Response> {
     }
 
     const userKey = ["users", username];
+    const kv = await getKv();
 
     if (path === "/api/register") {
-      const existingUser = await kv.get<{ username: string; hashedPassword: string }>(userKey);
+      const existingUser = await kv.get<UserData>(userKey);
       if (existingUser.value) {
         return new Response(
           JSON.stringify({ success: false, message: "用户名已存在" }),
@@ -66,6 +63,7 @@ async function apiHandler(req: Request): Promise<Response> {
       }
       const hashedPassword = await hashPassword(password);
       await kv.set(userKey, { username, hashedPassword });
+      await kv.close(); // 关闭 KV 连接
       return new Response(
         JSON.stringify({ success: true, message: "注册成功！" }),
         { status: 201 },
@@ -73,7 +71,8 @@ async function apiHandler(req: Request): Promise<Response> {
     }
 
     if (path === "/api/login") {
-      const userRecord = (await kv.get<{ username: string; hashedPassword: string }>(userKey)).value;
+      const userRecord = (await kv.get<UserData>(userKey)).value;
+      await kv.close(); // 关闭 KV 连接
       if (!userRecord) {
         return new Response(
           JSON.stringify({ success: false, message: "用户不存在" }),
@@ -93,8 +92,10 @@ async function apiHandler(req: Request): Promise<Response> {
       );
     }
 
+    await kv.close(); // 关闭 KV 连接
     return new Response("Not Found", { status: 404 });
-  } catch (_err) {
+  } catch (err) {
+    console.error("API 处理错误:", err);
     return new Response(
       JSON.stringify({ success: false, message: "服务器内部错误" }),
       { status: 500 },
