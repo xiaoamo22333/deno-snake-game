@@ -116,9 +116,8 @@ async function mainHandler(req: Request): Promise<Response> {
   return serveDir(req, { fsRoot: "static" });
 }
 
-// ✅ 本地 / Deno Deploy 通用
+// ✅ 本地 & Deno Deploy 都能用
 if (import.meta.main) {
   console.log("服务器启动中...");
-  // 不指定端口，Deploy 自动处理；本地默认 8000
-  serve(mainHandler);
+  serve(mainHandler); // ⚠️ 不要传 { port }
 }
