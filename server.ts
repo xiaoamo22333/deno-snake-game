@@ -1,5 +1,4 @@
 // server.ts
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.224.0/http/file_server.ts";
 
 const kv = await Deno.openKv();
@@ -104,8 +103,3 @@ async function mainHandler(req: Request): Promise<Response> {
 
 // 导出 handler 函数供 Deno Deploy 使用
 export default mainHandler;
-
-// 仅在本地开发时运行服务器
-if (import.meta.main) {
-  serve(mainHandler, { port: 3000 });
-}
