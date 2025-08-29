@@ -99,7 +99,6 @@ async function apiHandler(req: Request): Promise<Response> {
   }
 }
 
-// 关键：用 function 定义，确保被 hoist
 async function mainHandler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
@@ -117,8 +116,13 @@ async function mainHandler(req: Request): Promise<Response> {
   return serveDir(req, { fsRoot: "static" });
 }
 
-// 放在最后执行
-const PORT = 8000;
-// deno-lint-ignore no-console
-console.log(`服务器正在运行... http://localhost:${PORT}`);
-serve(mainHandler);
+// ✅ 本地/Deploy 兼容处理
+if (Deno.env.get("DENO_DEPLOYMENT_ID")) {
+  // Deno Deploy 环境：不指定端口
+  serve(mainHandler);
+} else {
+  // 本地环境：指定端口
+  const PORT = 8000;
+  console.log(`服务器正在运行... http://localhost:${PORT}`);
+  serve(mainHandler, { port: PORT });
+}
