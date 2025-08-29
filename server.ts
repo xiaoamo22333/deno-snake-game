@@ -102,23 +102,19 @@ async function mainHandler(req: Request): Promise<Response> {
   }
 }
 
-// ✅ 本地 + Deploy 通用
-async function startServer(port = 3000) {
-  try {
-    console.log(`尝试在端口 ${port} 启动服务器...`);
-    await serve(mainHandler, { port });
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === "AddrInUse") {
-      console.log(`端口 ${port} 已被占用，尝试使用端口 ${port + 1}...`);
-      await startServer(port + 1);
-    } else {
-      throw error;
-    }
-  }
-}
+// 检测是否在 Deno Deploy 环境
+const isDeploy = Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
 
 if (import.meta.main) {
-  await startServer(3000);
+  console.log("服务器启动中...");
+  if (isDeploy) {
+    // Deno Deploy 环境下不指定任何配置，让平台自己处理
+    await serve(mainHandler);
+  } else {
+    // 本地开发环境使用 3000 端口
+    console.log("在端口 3000 启动本地服务器...");
+    await serve(mainHandler, { port: 3000 });
+  }
 }
 
 // 导出 handler 函数供 Deno Deploy 使用
