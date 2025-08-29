@@ -1,37 +1,6 @@
 // server.ts
 import { serveDir } from "https://deno.land/std@0.224.0/http/file_server.ts";
 
-// 定义 KV 存储类型
-type UserData = {
-  username: string;
-  hashedPassword: string;
-};
-
-// 创建一个获取 KV 实例的函数
-async function getKv(): Promise<Deno.Kv> {
-  try {
-    return await Deno.openKv();
-  } catch (error) {
-    console.error("KV 存储初始化失败:", error);
-    throw new Error("无法访问 KV 存储");
-  }
-}
-
-function str2ab(str: string): Uint8Array {
-  return new TextEncoder().encode(str);
-}
-
-function ab2hex(ab: ArrayBuffer): string {
-  return Array.from(new Uint8Array(ab))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", str2ab(password));
-  return ab2hex(hashBuffer);
-}
-
 async function apiHandler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
@@ -50,49 +19,21 @@ async function apiHandler(req: Request): Promise<Response> {
       );
     }
 
-    const userKey = ["users", username];
-    const kv = await getKv();
-
+    // 临时返回成功响应，不进行实际的用户验证
     if (path === "/api/register") {
-      const existingUser = await kv.get<UserData>(userKey);
-      if (existingUser.value) {
-        return new Response(
-          JSON.stringify({ success: false, message: "用户名已存在" }),
-          { status: 409 },
-        );
-      }
-      const hashedPassword = await hashPassword(password);
-      await kv.set(userKey, { username, hashedPassword });
-      await kv.close(); // 关闭 KV 连接
       return new Response(
-        JSON.stringify({ success: true, message: "注册成功！" }),
+        JSON.stringify({ success: true, message: "注册成功！（测试模式）" }),
         { status: 201 },
       );
     }
 
     if (path === "/api/login") {
-      const userRecord = (await kv.get<UserData>(userKey)).value;
-      await kv.close(); // 关闭 KV 连接
-      if (!userRecord) {
-        return new Response(
-          JSON.stringify({ success: false, message: "用户不存在" }),
-          { status: 404 },
-        );
-      }
-      const inputHashedPassword = await hashPassword(password);
-      if (inputHashedPassword === userRecord.hashedPassword) {
-        return new Response(
-          JSON.stringify({ success: true, message: "登录成功！" }),
-          { status: 200 },
-        );
-      }
       return new Response(
-        JSON.stringify({ success: false, message: "密码错误" }),
-        { status: 401 },
+        JSON.stringify({ success: true, message: "登录成功！（测试模式）" }),
+        { status: 200 },
       );
     }
 
-    await kv.close(); // 关闭 KV 连接
     return new Response("Not Found", { status: 404 });
   } catch (err) {
     console.error("API 处理错误:", err);
