@@ -1,7 +1,25 @@
 // server.ts
 import { serveDir } from "https://deno.land/std@0.224.0/http/file_server.ts";
 
-const kv = await Deno.openKv();
+// 定义 KV 存储类型
+type UserData = {
+  username: string;
+  hashedPassword: string;
+};
+
+let kv: Deno.Kv;
+try {
+  console.log("正在初始化 KV 存储...");
+  if (!Deno.openKv) {
+    console.error("Deno.openKv 不可用");
+    throw new Error("Deno.openKv is not available");
+  }
+  kv = await Deno.openKv();
+  console.log("KV 存储初始化成功");
+} catch (error) {
+  console.error("KV 存储初始化失败:", error);
+  throw error;
+}
 
 function str2ab(str: string): Uint8Array {
   return new TextEncoder().encode(str);
