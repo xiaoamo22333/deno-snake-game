@@ -102,20 +102,10 @@ async function mainHandler(req: Request): Promise<Response> {
   }
 }
 
-// 检测是否在 Deno Deploy 环境
-const isDeploy = Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
-
-if (import.meta.main) {
-  console.log("服务器启动中...");
-  if (isDeploy) {
-    // Deno Deploy 环境下不指定任何配置，让平台自己处理
-    await serve(mainHandler);
-  } else {
-    // 本地开发环境使用 3000 端口
-    console.log("在端口 3000 启动本地服务器...");
-    await serve(mainHandler, { port: 3000 });
-  }
-}
-
 // 导出 handler 函数供 Deno Deploy 使用
 export default mainHandler;
+
+// 仅在本地开发时运行服务器
+if (import.meta.main) {
+  serve(mainHandler, { port: 3000 });
+}
