@@ -40,43 +40,32 @@ async function apiHandler(req: Request): Promise<Response> {
       );
     }
 
-    // 注册
-    if (path === "/api/register") {
-      const userKey = ["users", username];
-      const existingUser = await kv.get<
-        { username: string; hashedPassword: string }
-      >(userKey);
+    const userKey = ["users", username];
 
+    if (path === "/api/register") {
+      const existingUser = await kv.get<{ username: string; hashedPassword: string }>(userKey);
       if (existingUser.value) {
         return new Response(
           JSON.stringify({ success: false, message: "用户名已存在" }),
           { status: 409 },
         );
       }
-
       const hashedPassword = await hashPassword(password);
       await kv.set(userKey, { username, hashedPassword });
-
       return new Response(
         JSON.stringify({ success: true, message: "注册成功！" }),
         { status: 201 },
       );
     }
 
-    // 登录
     if (path === "/api/login") {
-      const userKey = ["users", username];
-      const userRecord =
-        (await kv.get<{ username: string; hashedPassword: string }>(userKey))
-          .value;
-
+      const userRecord = (await kv.get<{ username: string; hashedPassword: string }>(userKey)).value;
       if (!userRecord) {
         return new Response(
           JSON.stringify({ success: false, message: "用户不存在" }),
           { status: 404 },
         );
       }
-
       const inputHashedPassword = await hashPassword(password);
       if (inputHashedPassword === userRecord.hashedPassword) {
         return new Response(
@@ -101,23 +90,13 @@ async function apiHandler(req: Request): Promise<Response> {
 
 async function mainHandler(req: Request): Promise<Response> {
   const url = new URL(req.url);
-
-  if (url.pathname.startsWith("/api/")) {
-    return apiHandler(req);
-  }
-
-  if (url.pathname === "/") {
-    return Response.redirect(
-      new URL("/auth/login.html", req.url).toString(),
-      302,
-    );
-  }
-
+  if (url.pathname.startsWith("/api/")) return apiHandler(req);
+  if (url.pathname === "/") return Response.redirect(new URL("/auth/login.html", req.url).toString(), 302);
   return serveDir(req, { fsRoot: "static" });
 }
 
-// ✅ 本地 & Deno Deploy 都能用
+// ✅ 本地 + Deploy 通用
 if (import.meta.main) {
   console.log("服务器启动中...");
-  serve(mainHandler); // ⚠️ 不要传 { port }
+  serve(mainHandler); // 不指定 port
 }
