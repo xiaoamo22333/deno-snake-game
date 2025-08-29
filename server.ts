@@ -116,15 +116,9 @@ async function mainHandler(req: Request): Promise<Response> {
   return serveDir(req, { fsRoot: "static" });
 }
 
-// ✅ 本地 / Deploy 兼容处理
-if (Deno.build.target.includes("cloud")) {
-  // Deno Deploy 环境：不指定端口
+// ✅ 本地 / Deno Deploy 通用
+if (import.meta.main) {
+  console.log("服务器启动中...");
+  // 不指定端口，Deploy 自动处理；本地默认 8000
   serve(mainHandler);
-} else {
-  // 本地环境
-  const PORT = 8000;
-  console.log(`服务器正在运行... http://localhost:${PORT}`);
-  serve(mainHandler, { port: PORT });
 }
-// To run locally: deno run --allow-net --allow-read --allow-write server.ts
-// To deploy: deno deploy --project=your_project_name server.ts
