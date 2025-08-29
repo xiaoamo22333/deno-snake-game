@@ -116,13 +116,17 @@ async function mainHandler(req: Request): Promise<Response> {
   return serveDir(req, { fsRoot: "static" });
 }
 
-// ✅ 本地/Deploy 兼容处理
-if (Deno.env.get("DENO_DEPLOYMENT_ID")) {
-  // Deno Deploy 环境：不指定端口
-  serve(mainHandler);
-} else {
-  // 本地环境：指定端口
-  const PORT = 8000;
-  console.log(`服务器正在运行... http://localhost:${PORT}`);
-  serve(mainHandler, { port: PORT });
+// ✅ 本地 / Deploy 兼容处理
+if (import.meta.main) {
+  // 在 Deno Deploy 环境里，globalThis.Deno.deploy 会被注入
+  if ("deploy" in Deno) {
+    // Deno Deploy 环境：不需要指定端口
+    serve(mainHandler);
+  } else {
+    // 本地环境
+    const PORT = 8000;
+    console.log(`服务器正在运行... http://localhost:${PORT}`);
+    serve(mainHandler, { port: PORT });
+  }
 }
+// 在 Deno Deploy 环境中，省略端口号
